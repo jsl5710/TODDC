@@ -49,11 +49,51 @@ def _generate(live: bool) -> int:
     return 0
 
 
+def _simulate() -> int:
+    from toddc.ingest import SGD_1_00000_RAW, parse_dialogue
+    from toddc.judge import HeuristicJudge
+    from toddc.operators import all_operators
+    from toddc.passes import run_dialogue
+    from toddc.simulator import HeuristicCoherenceMetric, simulate_record
+
+    d = parse_dialogue(SGD_1_00000_RAW)
+    metric = HeuristicCoherenceMetric()
+    records = run_dialogue(dialogue_id=d.dialogue_id, window=d.turns,
+                           operators=all_operators(), services=d.services,
+                           policy="all", seed=1, judge=HeuristicJudge())
+    first: dict[str, object] = {}
+    for r in records:
+        first.setdefault(r.operator, r)
+
+    print(f"TODDC Simulator — coherence metric = {metric.name}\n")
+    hits = total = fa = 0
+    order = ["non_sequitur", "off_topic_insertion", "reference_break", "contradiction",
+             "slot_value_mismatch", "turn_reorder", "coherent_paraphrase"]
+    for op_id in order:
+        rec = first.get(op_id)
+        if rec is None:
+            continue
+        res = simulate_record(rec, metric)
+        total += 1
+        hits += res.localized
+        fa += res.false_alarm
+        peak = ", ".join(f"t{ts.ordinal}={ts.score}" for ts in res.turn_scores if ts.score > 0) or "(no flag)"
+        print(f"  {op_id:20} {str(res.dimension):17} target@t{res.target_idx:<2} "
+              f"peak@t{res.predicted_idx} localized={str(res.localized):5} "
+              f"false_alarm={str(res.false_alarm):5}  scores>0: {peak}")
+    print(f"\nlocalization: {hits}/{total}, false alarms: {fa}. The heuristic metric "
+          "catches relevance/global/cohesion/contradiction violations; slot-value "
+          "mismatch (needs a state cross-check) and reorder (needs a positional "
+          "check) need dedicated metrics — swap in LLMCoherenceMetric with a live model.")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="toddc")
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("demo", help="run the chain on a fixture and print the record")
     sub.add_parser("dialogue", help="spread violations across a fixture dialogue")
+    sub.add_parser("simulate", help="replay a sample; test if a coherence metric localizes the violation")
     g = sub.add_parser("generate", help="build the seed set into data/seed_v1/")
     g.add_argument("--live", action="store_true", help="use live generator+judge (needs keys)")
     args = p.parse_args(argv)
@@ -61,6 +101,8 @@ def main(argv: list[str] | None = None) -> int:
         return _demo()
     if args.cmd == "dialogue":
         return _dialogue()
+    if args.cmd == "simulate":
+        return _simulate()
     if args.cmd == "generate":
         return _generate(args.live)
     return 2

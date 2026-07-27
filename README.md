@@ -80,6 +80,18 @@ reproducible pipeline that scales to full SGD.
 consistency, next-utterance ranking, and an LLM-judge coherence rubric — so both
 a metric *and* a dialogue system can be scored on the same labeled violations.
 
+## Simulator
+
+The **TODDC Simulator** replays a (coherent, perturbed) sample turn-by-turn and
+tests whether a coherence metric flags the violation at the perturbed turn while
+avoiding a false alarm on the coherent control:
+
+```bash
+PYTHONPATH=src python -m toddc.cli simulate
+```
+
+See [`docs/simulator.md`](docs/simulator.md).
+
 ## License
 
 Derived from SGD (CC BY-SA 4.0) — data artifacts inherit CC BY-SA 4.0; code under
