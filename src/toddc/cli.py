@@ -49,15 +49,15 @@ def _generate(live: bool) -> int:
     return 0
 
 
-def _simulate() -> int:
+def _simulate(metric_name: str = "heuristic", mode: str = "history") -> int:
     from toddc.ingest import SGD_1_00000_RAW, parse_dialogue
     from toddc.judge import HeuristicJudge
     from toddc.operators import all_operators
     from toddc.passes import run_dialogue
-    from toddc.simulator import HeuristicCoherenceMetric, simulate_record
+    from toddc.simulator import load_coherence_metric, simulate_record
 
     d = parse_dialogue(SGD_1_00000_RAW)
-    metric = HeuristicCoherenceMetric()
+    metric = load_coherence_metric(metric_name)
     records = run_dialogue(dialogue_id=d.dialogue_id, window=d.turns,
                            operators=all_operators(), services=d.services,
                            policy="all", seed=1, judge=HeuristicJudge())
@@ -65,7 +65,7 @@ def _simulate() -> int:
     for r in records:
         first.setdefault(r.operator, r)
 
-    print(f"TODDC Simulator — coherence metric = {metric.name}\n")
+    print(f"TODDC Simulator — coherence metric = {metric.name}, mode = {mode}\n")
     hits = total = fa = 0
     order = ["non_sequitur", "off_topic_insertion", "reference_break", "contradiction",
              "slot_value_mismatch", "turn_reorder", "coherent_paraphrase"]
@@ -73,7 +73,7 @@ def _simulate() -> int:
         rec = first.get(op_id)
         if rec is None:
             continue
-        res = simulate_record(rec, metric)
+        res = simulate_record(rec, metric, mode=mode)
         total += 1
         hits += res.localized
         fa += res.false_alarm
@@ -93,7 +93,11 @@ def main(argv: list[str] | None = None) -> int:
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("demo", help="run the chain on a fixture and print the record")
     sub.add_parser("dialogue", help="spread violations across a fixture dialogue")
-    sub.add_parser("simulate", help="replay a sample; test if a coherence metric localizes the violation")
+    sim = sub.add_parser("simulate", help="replay a sample; test if a coherence metric localizes the violation")
+    sim.add_argument("--metric", default="heuristic",
+                     help="coherence metric (heuristic | entity_grid | llm_coherence | alignscore | discoscore | pdd)")
+    sim.add_argument("--mode", default="history", choices=["history", "immediate"],
+                     help="history = turn + prior context; immediate = current turn alone")
     g = sub.add_parser("generate", help="build the seed set into data/seed_v1/")
     g.add_argument("--live", action="store_true", help="use live generator+judge (needs keys)")
     args = p.parse_args(argv)
@@ -102,7 +106,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "dialogue":
         return _dialogue()
     if args.cmd == "simulate":
-        return _simulate()
+        return _simulate(args.metric, args.mode)
     if args.cmd == "generate":
         return _generate(args.live)
     return 2

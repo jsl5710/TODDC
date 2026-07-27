@@ -1,0 +1,4 @@
+# DiscoScore (Zhao et al., EACL 2023) — https://github.com/AIPHES/DiscoScore
+disco-score
+torch
+transformers

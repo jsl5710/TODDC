@@ -1,0 +1,6 @@
+# AlignScore (Zha et al., ACL 2023) — https://github.com/yuh-zha/AlignScore
+alignscore
+torch
+transformers>=4.20,<4.34
+# Model checkpoint (download separately, see README):
+#   AlignScore-base.ckpt or AlignScore-large.ckpt

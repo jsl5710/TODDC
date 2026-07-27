@@ -37,17 +37,44 @@ class SimResult:
     rank_of_target: Optional[int] = None
     localized: bool = False            # peaked at the target (or, for a control, no flag)
     false_alarm: bool = False          # flagged a coherent control
+    mode: str = "history"             # "immediate" (turn alone) | "history" (turn + prior context)
 
 
-def simulate_record(record, metric: CoherenceMetric, *, threshold: float = _THRESHOLD) -> SimResult:
+@dataclass
+class PairResult:
+    """Dialogue-level (DiscoScore/PDD): compare coherent original vs perturbed."""
+    metric: str
+    operator: str
+    dimension: Optional[str]
+    coherent_score: float             # incoherence of the original window
+    perturbed_score: float            # incoherence of the perturbed window
+    correct: bool                     # perturbed judged MORE incoherent than original
+
+
+def _turn_scores_for_mode(window, metric, mode: str) -> list[float]:
+    if mode == "history":
+        return metric.score_all(window)                 # each turn sees prior context
+    # immediate: score each turn alone (no context)
+    return [metric.score_all([window[i]])[0] for i in range(len(window))]
+
+
+def simulate_record(record, metric: CoherenceMetric, *, mode: str = "history",
+                    threshold: float = _THRESHOLD) -> SimResult:
+    """Per-turn coherence localization.
+
+    mode: "history" = each turn scored with its preceding context; "immediate" =
+    each turn scored in isolation. (Intrinsic metrics score the same either way;
+    context-aware ones — entity_grid, alignscore, llm — differ.)
+    """
+    if mode not in ("history", "immediate"):
+        raise ValueError(f"mode must be 'history' or 'immediate', got {mode!r}")
     window = record.passes_edit.final_window                 # the perturbed dialogue
     target = record.target_turn_idx
     should_flag = record.gold.should_flag
 
-    scores: list[TurnScore] = []
-    for i, t in enumerate(window):
-        s = metric.score_turn(window, i)
-        scores.append(TurnScore(i, t["speaker"], t["utterance"], round(s, 4), i == target))
+    raw = _turn_scores_for_mode(window, metric, mode)
+    scores = [TurnScore(i, window[i]["speaker"], window[i]["utterance"],
+                        round(raw[i], 4), i == target) for i in range(len(window))]
 
     flagged = [ts.ordinal for ts in scores if ts.score >= threshold]
     ordered = sorted(scores, key=lambda x: x.score, reverse=True)
@@ -65,4 +92,18 @@ def simulate_record(record, metric: CoherenceMetric, *, threshold: float = _THRE
                      dimension=record.dimension, target_idx=target,
                      should_flag=should_flag, turn_scores=scores,
                      predicted_idx=predicted, rank_of_target=rank,
-                     localized=localized, false_alarm=false_alarm)
+                     localized=localized, false_alarm=false_alarm, mode=mode)
+
+
+def simulate_pairwise(record, metric) -> PairResult:
+    """Dialogue-level scoring (DiscoScore / PDD): score the original coherent
+    window vs the perturbed window; a good metric rates the perturbed as more
+    incoherent (unless it's a coherent control, where they should be close)."""
+    coherent = [{"speaker": t.speaker, "utterance": t.utterance} for t in record.source_window]
+    perturbed = record.passes_edit.final_window
+    cs = metric.score_dialogue(coherent)
+    ps = metric.score_dialogue(perturbed)
+    correct = ps > cs if record.gold.should_flag else abs(ps - cs) < 1e-6
+    return PairResult(metric=metric.name, operator=record.operator,
+                      dimension=record.dimension, coherent_score=round(cs, 4),
+                      perturbed_score=round(ps, 4), correct=correct)

@@ -37,10 +37,23 @@ TODDC sample (perturbed dialogue window + gold label)
   a good metric must not call a meaning-preserving paraphrase incoherent
   (`false_alarm == False`).
 
+## Two modes & metric choice
+
+- `--mode history` (default) — each turn is scored with its **preceding context**.
+- `--mode immediate` — each turn is scored **in isolation**.
+- `--metric` — pick any coherence metric: `heuristic` | `entity_grid` |
+  `llm_coherence` | `alignscore` | `discoscore` | `pdd`. The last three run in
+  their own environments — see [`docs/coherence_metrics.md`](coherence_metrics.md).
+
+Intrinsic metrics (heuristic) score the same in both modes; context-aware ones
+(entity_grid, alignscore, llm) differ. Dialogue-level metrics (discoscore, pdd)
+use `simulate_pairwise` (coherent vs perturbed) instead of per-turn localization.
+
 ## Run it
 
 ```bash
-PYTHONPATH=src python -m toddc.cli simulate
+PYTHONPATH=src python -m toddc.cli simulate --metric heuristic --mode history
+PYTHONPATH=src python -m toddc.cli simulate --metric entity_grid --mode immediate
 ```
 
 Offline output (heuristic metric):

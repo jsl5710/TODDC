@@ -1,0 +1,4 @@
+# PDD: Positional Discourse Coherence (2024). No PyPI package as of writing —
+# clone the authors' repo and install its requirements, then wire runner.py.
+torch
+transformers
