@@ -1,0 +1,23 @@
+# Seed-set generation config (v1).
+sgd:
+  version: GEM/schema_guided_dialog
+  split: validation
+  dialogue_allowlist: []      # empty = sample; fill for the curated seed
+operators:
+  enabled:
+    - reference_break          # cohesion
+    - contradiction            # state_consistency (major)
+    - slot_value_mismatch      # state_consistency (major)
+    - non_sequitur             # relevance
+    - off_topic_insertion      # global
+    - turn_reorder             # local
+    - coherent_paraphrase      # control
+balance:
+  control_fraction: 0.2        # coherent controls, for false-incoherence measurement
+positioning:
+  policy: stratified_position  # spread violations across early/middle/late
+  seed: 42
+gating:
+  auto_accept_statuses: [accepted]
+  human_review_statuses: [needs_review]
+  min_naturalness: 0.6

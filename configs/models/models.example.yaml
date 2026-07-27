@@ -1,0 +1,13 @@
+# Model registry. Copy to models.yaml and fill in. NEVER commit keys — use env vars.
+closed:
+  claude:
+    adapter: toddo.runners.claude:ClaudeClient
+    model_id: claude-sonnet-5
+    api_key_env: ANTHROPIC_API_KEY
+  openai:
+    adapter: toddo.runners.openai:OpenAIClient
+    model_id: gpt-4o
+    api_key_env: OPENAI_API_KEY
+roles:
+  generator: closed.claude   # Pass-3 paraphrase
+  judge: closed.claude       # Pass-4 validation + coherence scoring

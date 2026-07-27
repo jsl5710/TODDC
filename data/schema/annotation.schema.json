@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jsl5710/TODDO/data/schema/annotation.schema.json",
+  "title": "TODDO annotation record",
+  "description": "One dialogue window with a coherence violation injected at a target turn, plus 5-pass provenance and a gold coherence label.",
+  "type": "object",
+  "required": ["record_id", "dialogue_id", "services", "target_turn_idx", "family",
+               "operator", "dimension", "position", "source_window", "passes",
+               "gold", "provenance"],
+  "properties": {
+    "record_id": { "type": "string" },
+    "dialogue_id": { "type": "string" },
+    "services": { "type": "array", "items": { "type": "string" } },
+    "target_turn_idx": { "type": "integer", "minimum": 0 },
+    "family": { "enum": ["control", "perturbation", "injection"] },
+    "operator": { "type": "string" },
+    "dimension": { "$ref": "#/$defs/dimension" },
+    "position": {
+      "type": "object",
+      "required": ["turn_ordinal", "num_turns", "relative_position", "band"],
+      "properties": {
+        "turn_ordinal": { "type": "integer", "minimum": 0 },
+        "num_turns": { "type": "integer", "minimum": 1 },
+        "relative_position": { "type": "number", "minimum": 0, "maximum": 1 },
+        "band": { "enum": ["early", "middle", "late"] }
+      }
+    },
+    "source_window": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["speaker", "utterance"],
+        "properties": {
+          "speaker": { "enum": ["USER", "SYSTEM"] },
+          "utterance": { "type": "string" },
+          "belief_state": { "type": "object" }
+        }
+      }
+    },
+    "passes": {
+      "type": "object",
+      "required": ["analyse", "document", "apply", "confirm", "edit"],
+      "properties": {
+        "analyse": { "type": "object", "required": ["modifiable"] },
+        "document": {
+          "type": "object",
+          "required": ["operator", "change_from", "change_to", "edit",
+                       "dimension", "expected_severity", "gold_label"],
+          "properties": {
+            "gold_label": { "enum": ["coherent", "incoherent"] },
+            "dimension": { "$ref": "#/$defs/dimension" },
+            "expected_severity": { "enum": ["none", "minor", "major"] }
+          }
+        },
+        "apply": { "type": "object", "required": ["modified_utterance", "method"] },
+        "confirm": {
+          "type": "object",
+          "required": ["change_applied", "status"],
+          "properties": { "status": { "enum": ["accepted", "needs_review", "rejected"] } }
+        },
+        "edit": {
+          "type": "object",
+          "required": ["mode", "final_utterance", "final_status"],
+          "properties": {
+            "mode": { "enum": ["copy", "repair"] },
+            "final_status": { "enum": ["finalized", "unresolved"] }
+          }
+        }
+      }
+    },
+    "gold": {
+      "type": "object",
+      "required": ["label", "dimension", "violation_type", "severity", "should_flag"],
+      "properties": {
+        "label": { "enum": ["coherent", "incoherent"] },
+        "dimension": { "$ref": "#/$defs/dimension" },
+        "violation_type": { "type": ["string", "null"] },
+        "severity": { "enum": ["none", "minor", "major"] },
+        "should_flag": { "type": "boolean" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["sgd_version", "seed"],
+      "properties": {
+        "sgd_version": { "type": "string" },
+        "seed": { "type": "integer" }
+      }
+    }
+  },
+  "$defs": {
+    "dimension": {
+      "type": ["string", "null"],
+      "enum": ["local", "cohesion", "global", "relevance", "state_consistency", null]
+    }
+  }
+}

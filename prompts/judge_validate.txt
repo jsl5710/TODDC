@@ -1,0 +1,21 @@
+You are validating a modified task-oriented-dialogue turn for a discourse-
+coherence dataset. Be strict: when in doubt, do not pass.
+
+ORIGINAL turn:
+{{change_from}}
+
+MODIFIED turn:
+{{change_to}}
+
+The modification was intended to break the "{{dimension}}" dimension of discourse
+coherence, so the gold label is "{{gold_label}}".
+
+Assess:
+1. fidelity — does the edit match the documented intent WITHOUT unintended change?
+   ("pass" | "fail" | "uncertain")
+2. violation_present — is the intended coherence violation actually present?
+   (true | false; for a "coherent" control, true means coherence was preserved)
+3. naturalness — does the turn read like fluent, natural dialogue? (0.0-1.0)
+
+Respond with ONLY a JSON object:
+{"fidelity": "...", "violation_present": true, "naturalness": 0.0}

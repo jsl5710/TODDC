@@ -1,0 +1,27 @@
+{
+  "sgd_version": "GEM/schema_guided_dialog",
+  "num_dialogues": 1,
+  "policy": "all",
+  "seed": 42,
+  "generator_model": "echo-stub",
+  "judge_model": "heuristic-judge",
+  "stats": {
+    "total": 7,
+    "accepted": 7,
+    "needs_review": 0,
+    "rejected": 0,
+    "invariant_failures": 0,
+    "by_dimension": {
+      "None": 1,
+      "cohesion": 1,
+      "global": 1,
+      "local": 1,
+      "relevance": 1,
+      "state_consistency": 2
+    },
+    "coherent_vs_incoherent": {
+      "coherent": 1,
+      "incoherent": 6
+    }
+  }
+}

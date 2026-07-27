@@ -1,0 +1,6 @@
+Rewrite the following dialogue turn into {{n}} natural, fluent variants that a
+real person might say. Preserve the EXACT meaning and every information slot.
+Return one variant per line, no numbering, no commentary.
+
+Turn:
+{{utterance}}

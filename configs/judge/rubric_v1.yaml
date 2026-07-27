@@ -1,0 +1,17 @@
+# LLM-as-judge rubric (v1): validate violations + score coherence.
+validate_violation:
+  prompt: prompts/judge_validate.txt
+  criteria:
+    fidelity: {values: [pass, fail, uncertain]}
+    violation_present: {type: bool}
+    naturalness: {range: [0.0, 1.0]}
+  decision:
+    accept_if: "fidelity == 'pass' and violation_present and naturalness >= 0.6"
+    reject_if: "fidelity == 'fail'"
+    else: needs_review
+score_coherence:            # used by the eval harness on a dialogue system/metric
+  criteria:
+    is_coherent: {type: bool}
+    weakest_dimension: {values: [local, cohesion, global, relevance, state_consistency, none]}
+  panel:
+    n_judges: 1             # raise to 3 for adversarial majority-vote

@@ -1,0 +1,251 @@
+{
+  "record_id": "1_00000:5:slot_value_mismatch:42",
+  "dialogue_id": "1_00000",
+  "services": [
+    "Restaurants_1"
+  ],
+  "target_turn_idx": 5,
+  "family": "perturbation",
+  "operator": "slot_value_mismatch",
+  "dimension": "state_consistency",
+  "position": {
+    "turn_ordinal": 5,
+    "num_turns": 8,
+    "relative_position": 0.7143,
+    "band": "late"
+  },
+  "source_window": [
+    {
+      "speaker": "USER",
+      "utterance": "I am feeling hungry so I would like to find a place to eat.",
+      "belief_state": {
+        "Restaurants_1": {
+          "active_intent": "FindRestaurants",
+          "requested_slots": [],
+          "slot_values": {}
+        }
+      }
+    },
+    {
+      "speaker": "SYSTEM",
+      "utterance": "Do you have a specific area where you want the eating place to be located?",
+      "belief_state": {
+        "Restaurants_1": {
+          "active_intent": null,
+          "requested_slots": [],
+          "slot_values": {}
+        }
+      }
+    },
+    {
+      "speaker": "USER",
+      "utterance": "I would like for it to be in San Jose.",
+      "belief_state": {
+        "Restaurants_1": {
+          "active_intent": "FindRestaurants",
+          "requested_slots": [],
+          "slot_values": {
+            "city": "San Jose"
+          }
+        }
+      }
+    },
+    {
+      "speaker": "SYSTEM",
+      "utterance": "Is there a specific cuisine type you enjoy, such as Mexican, Italian or something else?",
+      "belief_state": {
+        "Restaurants_1": {
+          "active_intent": null,
+          "requested_slots": [],
+          "slot_values": {}
+        }
+      }
+    },
+    {
+      "speaker": "USER",
+      "utterance": "I usually like eating the American type of food.",
+      "belief_state": {
+        "Restaurants_1": {
+          "active_intent": "FindRestaurants",
+          "requested_slots": [],
+          "slot_values": {
+            "city": "San Jose",
+            "cuisine": "American"
+          }
+        }
+      }
+    },
+    {
+      "speaker": "SYSTEM",
+      "utterance": "I see that at 71 Saint Peter there is a good restaurant which is in San Jose.",
+      "belief_state": {
+        "Restaurants_1": {
+          "active_intent": null,
+          "requested_slots": [],
+          "slot_values": {}
+        }
+      }
+    },
+    {
+      "speaker": "USER",
+      "utterance": "Can you give me the address of this restaurant?",
+      "belief_state": {
+        "Restaurants_1": {
+          "active_intent": "FindRestaurants",
+          "requested_slots": [
+            "street_address"
+          ],
+          "slot_values": {
+            "city": "San Jose",
+            "cuisine": "American"
+          }
+        }
+      }
+    },
+    {
+      "speaker": "SYSTEM",
+      "utterance": "If you want to go to this restaurant you can find it at 71 North San Pedro Street.",
+      "belief_state": {
+        "Restaurants_1": {
+          "active_intent": null,
+          "requested_slots": [],
+          "slot_values": {}
+        }
+      }
+    }
+  ],
+  "passes": {
+    "analyse": {
+      "modifiable": true,
+      "target_turn_idx": 5,
+      "target_speaker": "SYSTEM",
+      "target_entity": "Saint Peter",
+      "candidate_operators": [
+        "slot_value_mismatch"
+      ],
+      "rationale": "System states 'Saint Peter'; replace with a value not in state."
+    },
+    "document": {
+      "operator": "slot_value_mismatch",
+      "change_from": "I see that at 71 Saint Peter there is a good restaurant which is in San Jose.",
+      "change_to": "I see that at 71 Union Square there is a good restaurant which is in San Jose.",
+      "edit": {
+        "turn_idx": 5,
+        "entity": "Saint Peter",
+        "to": "Union Square"
+      },
+      "dimension": "state_consistency",
+      "expected_severity": "major",
+      "gold_label": "incoherent",
+      "violation_type": "slot_value_mismatch"
+    },
+    "apply": {
+      "modified_utterance": "I see that at 71 Union Square there is a good restaurant which is in San Jose.",
+      "method": "template",
+      "paraphrase_variants": [],
+      "new_window": [
+        {
+          "speaker": "USER",
+          "utterance": "I am feeling hungry so I would like to find a place to eat."
+        },
+        {
+          "speaker": "SYSTEM",
+          "utterance": "Do you have a specific area where you want the eating place to be located?"
+        },
+        {
+          "speaker": "USER",
+          "utterance": "I would like for it to be in San Jose."
+        },
+        {
+          "speaker": "SYSTEM",
+          "utterance": "Is there a specific cuisine type you enjoy, such as Mexican, Italian or something else?"
+        },
+        {
+          "speaker": "USER",
+          "utterance": "I usually like eating the American type of food."
+        },
+        {
+          "speaker": "SYSTEM",
+          "utterance": "I see that at 71 Union Square there is a good restaurant which is in San Jose."
+        },
+        {
+          "speaker": "USER",
+          "utterance": "Can you give me the address of this restaurant?"
+        },
+        {
+          "speaker": "SYSTEM",
+          "utterance": "If you want to go to this restaurant you can find it at 71 North San Pedro Street."
+        }
+      ]
+    },
+    "confirm": {
+      "change_applied": true,
+      "status": "accepted",
+      "structural_checks": {
+        "utterance_changed": true
+      },
+      "judge_verdict": {
+        "fidelity": "pass",
+        "violation_present": true,
+        "naturalness": 0.7,
+        "_heuristic": true
+      },
+      "notes": ""
+    },
+    "edit": {
+      "mode": "copy",
+      "final_utterance": "I see that at 71 Union Square there is a good restaurant which is in San Jose.",
+      "final_window": [
+        {
+          "speaker": "USER",
+          "utterance": "I am feeling hungry so I would like to find a place to eat."
+        },
+        {
+          "speaker": "SYSTEM",
+          "utterance": "Do you have a specific area where you want the eating place to be located?"
+        },
+        {
+          "speaker": "USER",
+          "utterance": "I would like for it to be in San Jose."
+        },
+        {
+          "speaker": "SYSTEM",
+          "utterance": "Is there a specific cuisine type you enjoy, such as Mexican, Italian or something else?"
+        },
+        {
+          "speaker": "USER",
+          "utterance": "I usually like eating the American type of food."
+        },
+        {
+          "speaker": "SYSTEM",
+          "utterance": "I see that at 71 Union Square there is a good restaurant which is in San Jose."
+        },
+        {
+          "speaker": "USER",
+          "utterance": "Can you give me the address of this restaurant?"
+        },
+        {
+          "speaker": "SYSTEM",
+          "utterance": "If you want to go to this restaurant you can find it at 71 North San Pedro Street."
+        }
+      ],
+      "final_status": "finalized",
+      "changes": [],
+      "notes": ""
+    }
+  },
+  "gold": {
+    "label": "incoherent",
+    "dimension": "state_consistency",
+    "violation_type": "slot_value_mismatch",
+    "severity": "major",
+    "should_flag": true
+  },
+  "provenance": {
+    "sgd_version": "GEM/schema_guided_dialog",
+    "seed": 42,
+    "generator_model": null,
+    "judge_model": "heuristic-judge",
+    "created_at": null
+  }
+}
