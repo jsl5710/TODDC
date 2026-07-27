@@ -30,5 +30,5 @@ One (coherent, perturbed) sample = one JSON record. Canonical machine schema:
 Each record is one half of a pair: `source_window` (coherent) vs. the perturbed
 window in `passes.edit.final_window` (incoherent, unless a control). Feed both to
 a coherence metric or a dialogue system and check it flags the perturbed one and
-not the original — scored with `toddo.eval.detection_accuracy` /
+not the original — scored with `toddc.eval.detection_accuracy` /
 `false_incoherence_rate`.

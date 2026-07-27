@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "toddo"
+name = "toddc"
 version = "0.1.0"
-description = "Task-Oriented Dialogue Discourse cOherence — controlled coherence-violation injection over SGD via a chain-of-passes pipeline."
+description = "Task-Oriented Dialogue Discourse Coherence — controlled coherence-violation injection over SGD via a chain-of-passes pipeline."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT (code) / CC BY-SA 4.0 (data)" }
@@ -26,7 +26,7 @@ eval = ["numpy>=1.26", "scikit-learn>=1.4"]
 dev = ["pytest>=8.0", "ruff>=0.4", "mypy>=1.10"]
 
 [project.scripts]
-toddo = "toddo.cli:main"
+toddc = "toddc.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

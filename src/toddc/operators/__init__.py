@@ -1,6 +1,6 @@
 """Operator registry (v1)."""
-from toddo.operators.base import Operator
-from toddo.operators.coherence_ops import (
+from toddc.operators.base import Operator
+from toddc.operators.coherence_ops import (
     CoherentParaphrase,
     Contradiction,
     NonSequitur,

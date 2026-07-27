@@ -1,6 +1,6 @@
 """Dataclass mirror of data/schema/annotation.schema.json (stdlib, dep-free).
 
-A TODDO record is a (coherent, perturbed) sample: a dialogue window with one
+A TODDC record is a (coherent, perturbed) sample: a dialogue window with one
 coherence violation injected at a target turn, plus the 5-pass provenance and a
 gold coherence label.
 """

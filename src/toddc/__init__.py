@@ -1,4 +1,4 @@
-"""TODDO — Task-Oriented Dialogue Discourse cOherence.
+"""TODDC — Task-Oriented Dialogue Discourse Coherence.
 
 Controlled coherence-violation injection over SGD via a 5-pass chain
 (analyse -> document -> apply -> confirm -> edit), producing labeled

@@ -1,6 +1,6 @@
 # Coherence taxonomy
 
-TODDO organizes injection around five **dimensions** of discourse coherence,
+TODDC organizes injection around five **dimensions** of discourse coherence,
 grounded in discourse/dialogue theory. This page is the reference operators and
 labelers cite by name.
 

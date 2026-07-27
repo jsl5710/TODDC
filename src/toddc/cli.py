@@ -1,4 +1,4 @@
-"""Minimal CLI for TODDO."""
+"""Minimal CLI for TODDC."""
 from __future__ import annotations
 
 import argparse
@@ -7,9 +7,9 @@ import sys
 
 
 def _demo() -> int:
-    from toddo.ingest import SGD_1_00000_RAW, parse_dialogue
-    from toddo.operators import get_operator
-    from toddo.passes import run_chain
+    from toddc.ingest import SGD_1_00000_RAW, parse_dialogue
+    from toddc.operators import get_operator
+    from toddc.passes import run_chain
     d = parse_dialogue(SGD_1_00000_RAW)
     rec = run_chain(dialogue_id=d.dialogue_id, window=d.turns,
                     operator=get_operator("reference_break"), services=d.services, seed=42)
@@ -21,9 +21,9 @@ def _demo() -> int:
 
 
 def _dialogue() -> int:
-    from toddo.ingest import SGD_1_00000_RAW, parse_dialogue
-    from toddo.operators import all_operators
-    from toddo.passes import run_dialogue
+    from toddc.ingest import SGD_1_00000_RAW, parse_dialogue
+    from toddc.operators import all_operators
+    from toddc.passes import run_dialogue
     d = parse_dialogue(SGD_1_00000_RAW)
     recs = run_dialogue(dialogue_id=d.dialogue_id, window=d.turns,
                         operators=all_operators(), services=d.services, policy="all", seed=1)
@@ -36,11 +36,11 @@ def _dialogue() -> int:
 
 
 def _generate(live: bool) -> int:
-    from toddo.generate import generate_seed
+    from toddc.generate import generate_seed
     llm = judge = None
     if live:
-        from toddo.judge import Judge
-        from toddo.runners.factory import client_for_role
+        from toddc.judge import Judge
+        from toddc.runners.factory import client_for_role
         llm = client_for_role("generator")
         judge = Judge(client_for_role("judge"))
     stats = generate_seed(llm=llm, judge=judge)
@@ -50,7 +50,7 @@ def _generate(live: bool) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(prog="toddo")
+    p = argparse.ArgumentParser(prog="toddc")
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("demo", help="run the chain on a fixture and print the record")
     sub.add_parser("dialogue", help="spread violations across a fixture dialogue")

@@ -1,9 +1,9 @@
 """End-to-end chain tests, runnable offline."""
-from toddo.ingest import SGD_1_00000_RAW, parse_dialogue
-from toddo.judge import HeuristicJudge
-from toddo.operators import all_operators, get_operator
-from toddo.passes import run_chain, run_dialogue
-from toddo.validate import check_invariants
+from toddc.ingest import SGD_1_00000_RAW, parse_dialogue
+from toddc.judge import HeuristicJudge
+from toddc.operators import all_operators, get_operator
+from toddc.passes import run_chain, run_dialogue
+from toddc.validate import check_invariants
 
 DIALOGUE = parse_dialogue(SGD_1_00000_RAW)
 

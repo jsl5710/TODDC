@@ -7,12 +7,12 @@ from __future__ import annotations
 
 from typing import Optional
 
-from toddo.coherence import derive_dimension, should_flag
-from toddo.judge import HeuristicJudge, Judge, NullJudge
-from toddo.operators.base import Operator
-from toddo.positioning import Site, enumerate_sites, position_of, select_sites
-from toddo.runners.base import LLMClient
-from toddo.schema import (
+from toddc.coherence import derive_dimension, should_flag
+from toddc.judge import HeuristicJudge, Judge, NullJudge
+from toddc.operators.base import Operator
+from toddc.positioning import Site, enumerate_sites, position_of, select_sites
+from toddc.runners.base import LLMClient
+from toddc.schema import (
     ConfirmPass,
     DialogueTurn,
     EditPass,

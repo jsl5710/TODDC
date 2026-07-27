@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from toddo.runners.base import GenConfig
+from toddc.runners.base import GenConfig
 
 DEFAULT_MODEL = "claude-opus-5"
 
@@ -14,7 +14,7 @@ class ClaudeClient:
         try:
             import anthropic
         except ImportError as e:  # pragma: no cover
-            raise ImportError("pip install 'toddo[closed]' (needs `anthropic`).") from e
+            raise ImportError("pip install 'toddc[closed]' (needs `anthropic`).") from e
         self.client = anthropic.Anthropic()
         self.model_id = model_id
         self.effort = effort

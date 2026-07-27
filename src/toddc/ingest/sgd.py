@@ -1,6 +1,6 @@
 """Ingest SGD into full dialogue-turn windows (USER + SYSTEM).
 
-Coherence is inter-turn, so — unlike TODUQ, which keeps only user turns — TODDO
+Coherence is inter-turn, so — unlike TODUQ, which keeps only user turns — TODDC
 keeps the whole ordered sequence (system responses included), plus the per-user
 belief state. `parse_dialogue` is pure; `load_sgd` is the HF seam.
 """
@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Iterator
 
-from toddo.schema import BeliefState, DialogueTurn, Frame
+from toddc.schema import BeliefState, DialogueTurn, Frame
 
 
 @dataclass

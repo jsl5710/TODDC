@@ -4,13 +4,13 @@ from pathlib import Path
 
 import pytest
 
-from toddo.eval import (
+from toddc.eval import (
     detection_accuracy,
     entity_grid_continuity,
     false_incoherence_rate,
     next_utterance_rank,
 )
-from toddo.validate import check_invariants
+from toddc.validate import check_invariants
 
 EXAMPLE = Path(__file__).resolve().parents[1] / "examples" / "record_slot_value_mismatch.json"
 
@@ -41,5 +41,5 @@ def test_example_passes_invariants():
 
 def test_example_matches_json_schema():
     jsonschema = pytest.importorskip("jsonschema")
-    from toddo.validate import load_schema
+    from toddc.validate import load_schema
     jsonschema.validate(json.loads(EXAMPLE.read_text()), load_schema())

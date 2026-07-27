@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/jsl5710/TODDO/data/schema/annotation.schema.json",
-  "title": "TODDO annotation record",
+  "$id": "https://github.com/jsl5710/TODDC/data/schema/annotation.schema.json",
+  "title": "TODDC annotation record",
   "description": "One dialogue window with a coherence violation injected at a target turn, plus 5-pass provenance and a gold coherence label.",
   "type": "object",
   "required": ["record_id", "dialogue_id", "services", "target_turn_idx", "family",

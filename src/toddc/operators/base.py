@@ -11,8 +11,8 @@ import re
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from toddo.runners.base import LLMClient
-from toddo.schema import AnalysePass, ApplyPass, DialogueTurn, DocumentPass, Family
+from toddc.runners.base import LLMClient
+from toddc.schema import AnalysePass, ApplyPass, DialogueTurn, DocumentPass, Family
 
 _ENTITY = re.compile(r"\b([A-Z][a-z]+(?: [A-Z][a-z]+)+)\b")  # multiword proper nouns
 
@@ -80,7 +80,7 @@ class Operator(ABC):
     def _maybe_paraphrase(self, text: str, llm: Optional[LLMClient], n: int = 2):
         if llm is None:
             return "template", []
-        from toddo.prompts import render_paraphrase_prompt
+        from toddc.prompts import render_paraphrase_prompt
         out = llm.generate(render_paraphrase_prompt(text, n=n))
         variants = [ln.strip("-• ").strip() for ln in out.splitlines() if ln.strip()][:n]
         return "template+llm_paraphrase", variants

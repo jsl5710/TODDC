@@ -5,7 +5,7 @@ Every violation operator yields `incoherent`; the control yields `coherent`.
 """
 from __future__ import annotations
 
-from toddo.schema import CoherenceLabel, Dimension, Severity
+from toddc.schema import CoherenceLabel, Dimension, Severity
 
 # Operator -> coherence dimension it targets.
 OPERATOR_DIMENSION: dict[str, Dimension | None] = {

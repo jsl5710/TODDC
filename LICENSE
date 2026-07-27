@@ -1,4 +1,4 @@
-TODDO — Task-Oriented Dialogue Discourse cOherence
+TODDC — Task-Oriented Dialogue Discourse Coherence
 
 DATA + DERIVED DATA ARTIFACTS
 =============================
@@ -11,7 +11,7 @@ derived records) are distributed under CC BY-SA 4.0.
   Attribution: Rastogi et al. (2020), "Towards Scalable Multi-domain Conversational
   Agents: The Schema-Guided Dialogue Dataset," AAAI 2020.
 
-TODDO intentionally modifies SGD turns; changes ARE made and are recorded
+TODDC intentionally modifies SGD turns; changes ARE made and are recorded
 per-record in the `passes` provenance. Derived data is shared under the same
 license (ShareAlike).
 
@@ -19,7 +19,7 @@ SOURCE CODE
 ===========
 Source code in src/, tests/, configs/ is licensed under the MIT License:
 
-  Copyright (c) 2026 TODDO contributors
+  Copyright (c) 2026 TODDC contributors
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal

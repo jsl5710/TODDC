@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Optional
 
-from toddo.runners.base import EchoClient, LLMClient
+from toddc.runners.base import EchoClient, LLMClient
 
 _CONFIG = Path(__file__).resolve().parents[3] / "configs" / "models" / "models.yaml"
 
@@ -13,10 +13,10 @@ def build_client(spec: dict[str, Any]) -> LLMClient:
     adapter = spec.get("adapter", "")
     model_id = spec.get("model_id", "")
     if adapter.endswith("claude:ClaudeClient"):
-        from toddo.runners.claude import ClaudeClient
+        from toddc.runners.claude import ClaudeClient
         return ClaudeClient(model_id or "claude-opus-5")
     if adapter.endswith("openai:OpenAIClient"):
-        from toddo.runners.openai import OpenAIClient
+        from toddc.runners.openai import OpenAIClient
         return OpenAIClient(model_id or "gpt-4o")
     raise ValueError(f"Unknown adapter: {adapter!r}")
 

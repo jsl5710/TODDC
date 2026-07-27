@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from toddo.runners.base import GenConfig
+from toddc.runners.base import GenConfig
 
 
 class OpenAIClient:
@@ -11,7 +11,7 @@ class OpenAIClient:
         try:
             import openai
         except ImportError as e:  # pragma: no cover
-            raise ImportError("pip install 'toddo[closed]' (needs `openai`).") from e
+            raise ImportError("pip install 'toddc[closed]' (needs `openai`).") from e
         self.client = openai.OpenAI()
         self.model_id = model_id
         self.max_tokens = max_tokens

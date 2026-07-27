@@ -1,14 +1,14 @@
-# TODDO — Task-Oriented Dialogue Discourse cOherence
+# TODDC — Task-Oriented Dialogue Discourse Coherence
 
 A dataset-development framework for injecting **controlled discourse-coherence
 violations** into task-oriented dialogue (TOD) and labeling them, so coherence
 metrics and conversational / agentic AI systems can be trained and evaluated on
 *whether a dialogue actually hangs together*.
 
-TODDO is the sibling of [**TODUQ**](https://github.com/jsl5710/TODUQ): same base
+TODDC is the sibling of [**TODUQ**](https://github.com/jsl5710/TODUQ): same base
 dataset ([Schema-Guided Dialogue](https://huggingface.co/datasets/GEM/schema_guided_dialog)),
 same **chain-of-passes** generation method, same provider-agnostic + LLM-as-judge
-infrastructure — but where TODUQ injects *uncertainty*, TODDO injects
+infrastructure — but where TODUQ injects *uncertainty*, TODDC injects
 *incoherence*.
 
 ```
@@ -22,8 +22,8 @@ coherent SGD dialogue ──► inject a coherence violation ──► (coherent
 
 Uncertainty-driven interventions — a clarification, a hand-off, a RAG detour — are
 exactly the moments a task-oriented dialogue is most likely to lose its thread.
-TODDO is the natural evaluator for those flows: **TODUQ** triggers the
-intervention, **TODUQ-MoA** acts on it, **TODDO** scores whether the resulting
+TODDC is the natural evaluator for those flows: **TODUQ** triggers the
+intervention, **TODUQ-MoA** acts on it, **TODDC** scores whether the resulting
 dialogue stayed coherent.
 
 ## Coherence dimensions (v1)
@@ -76,7 +76,7 @@ reproducible pipeline that scales to full SGD.
 
 ## Evaluation
 
-`toddo.eval`: entity-grid continuity, reference-resolution checks, belief-state
+`toddc.eval`: entity-grid continuity, reference-resolution checks, belief-state
 consistency, next-utterance ranking, and an LLM-judge coherence rubric — so both
 a metric *and* a dialogue system can be scored on the same labeled violations.
 

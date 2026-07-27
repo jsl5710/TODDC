@@ -5,10 +5,10 @@ from __future__ import annotations
 
 from typing import Optional
 
-from toddo.coherence import derive_dimension, derive_label, derive_severity
-from toddo.operators.base import Operator
-from toddo.runners.base import LLMClient
-from toddo.schema import AnalysePass, ApplyPass, DialogueTurn, DocumentPass
+from toddc.coherence import derive_dimension, derive_label, derive_severity
+from toddc.operators.base import Operator
+from toddc.runners.base import LLMClient
+from toddc.schema import AnalysePass, ApplyPass, DialogueTurn, DocumentPass
 
 _ALT_ENTITY = {"San Jose": "Oakland", "American": "Ethiopian", "Saint Peter": "Union Square"}
 

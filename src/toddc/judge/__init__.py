@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from toddo.prompts import render_judge_prompt
-from toddo.runners.base import LLMClient
+from toddc.prompts import render_judge_prompt
+from toddc.runners.base import LLMClient
 
 
 class NullJudge:

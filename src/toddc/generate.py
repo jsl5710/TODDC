@@ -6,12 +6,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
-from toddo.ingest import SGD_1_00000_RAW, parse_dialogue
-from toddo.judge import HeuristicJudge
-from toddo.operators import all_operators
-from toddo.passes import run_dialogue
-from toddo.runners.base import LLMClient
-from toddo.validate import check_invariants
+from toddc.ingest import SGD_1_00000_RAW, parse_dialogue
+from toddc.judge import HeuristicJudge
+from toddc.operators import all_operators
+from toddc.passes import run_dialogue
+from toddc.runners.base import LLMClient
+from toddc.validate import check_invariants
 
 _OUT = Path(__file__).resolve().parents[2] / "data" / "seed_v1"
 

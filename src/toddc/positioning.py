@@ -9,8 +9,8 @@ import random
 from dataclasses import dataclass
 from typing import Literal, Optional, Sequence
 
-from toddo.operators.base import Operator
-from toddo.schema import DialogueTurn, Position
+from toddc.operators.base import Operator
+from toddc.schema import DialogueTurn, Position
 
 Band = Literal["early", "middle", "late"]
 
