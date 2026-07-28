@@ -87,6 +87,33 @@ and `provenance.judge_model` names the model that validated it.
 so you can confirm the work was divided as intended and trace any sample back to
 its generator and judge.
 
+## Class balance (positive vs negative)
+
+Each turn gets many *violation* samples but only one *control* (coherent) sample,
+so the raw output is ~85 % positive (incoherent). Generation balances it in two
+steps so `records.jsonl` ships **1:1** by default:
+
+1. **Grow the negative class** — `--control-multiplier` (default `auto`) emits N
+   distinct coherent-paraphrase variants per turn. `auto` sizes N from the
+   operator mix (6 violation ops + 1 control → 6), so a live sampling model
+   produces ~6 diverse coherent samples per turn to match its violations. No
+   positives are duplicated or discarded to grow negatives.
+2. **Exact trim** — `balance()` then undersamples whichever class is still the
+   majority down to `--balance-ratio × minority` (default `1.0` = exact 1:1),
+   deterministically (seeded). The dropped rows are cheap paraphrases, never
+   positives when positives are the minority.
+
+```bash
+PYTHONPATH=src python -m toddc.cli generate --live --workers 8            # 1:1 (default)
+PYTHONPATH=src python -m toddc.cli generate --balance-ratio 2            # 2:1 positive:negative
+PYTHONPATH=src python -m toddc.cli generate --no-balance                 # raw, skewed
+```
+
+Two files are written: **`records.jsonl`** (balanced — the shipped set) and
+**`records_all.jsonl`** (the full accepted set, nothing lost). The manifest's
+`class_balance` block reports `positive` / `negative` / `majority_class` /
+`dropped` / `balanced_total`, and `control_multiplier` records the N used.
+
 ## Library use
 
 ```python
@@ -96,5 +123,6 @@ from toddc.generate import generate_seed
 
 gen = ModelPool([build_client(s) for s in generator_specs], strategy="round_robin")
 jud = ModelPool([build_client(s) for s in judge_specs], strategy="round_robin")
-generate_seed(pool=gen, judge_pool=jud, workers=8, raw_dialogues=dialogues)
+generate_seed(pool=gen, judge_pool=jud, workers=8, raw_dialogues=dialogues,
+              balance=True, balance_ratio=1.0, control_multiplier="auto")
 ```

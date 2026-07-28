@@ -4,15 +4,34 @@
   "policy": "all",
   "seed": 42,
   "generator_model": "echo-stub",
+  "generators": null,
+  "by_generator": {
+    "echo-stub": 12
+  },
   "judge_model": "heuristic-judge",
+  "judges": null,
+  "by_judge": {
+    "heuristic-judge": 12
+  },
+  "control_multiplier": 6,
+  "class_balance": {
+    "positive": 6,
+    "negative": 6,
+    "target_ratio": 1.0,
+    "majority_class": "positive",
+    "dropped": 0,
+    "kept_positive": 6,
+    "kept_negative": 6,
+    "balanced_total": 12
+  },
   "stats": {
-    "total": 7,
-    "accepted": 7,
+    "total": 12,
+    "accepted": 12,
     "needs_review": 0,
     "rejected": 0,
     "invariant_failures": 0,
     "by_dimension": {
-      "None": 1,
+      "None": 6,
       "cohesion": 1,
       "global": 1,
       "local": 1,
@@ -20,8 +39,11 @@
       "state_consistency": 2
     },
     "coherent_vs_incoherent": {
-      "coherent": 1,
+      "coherent": 6,
       "incoherent": 6
-    }
+    },
+    "positive": 6,
+    "negative": 6,
+    "balanced_total": 12
   }
 }

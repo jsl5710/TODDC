@@ -35,7 +35,8 @@ def _dialogue() -> int:
     return 0
 
 
-def _generate(live: bool, workers: int = 0) -> int:
+def _generate(live: bool, workers: int = 0, balance: bool = True,
+              balance_ratio: float = 1.0, control_multiplier: str = "auto") -> int:
     from toddc.generate import generate_seed
     llm = pool = judge = judge_pool = None
     if live:
@@ -54,9 +55,15 @@ def _generate(live: bool, workers: int = 0) -> int:
             print(f"Judges: {len(judge_pool.clients)}-model pool: {', '.join(judge_pool.labels)}")
         else:
             judge = Judge(client_for_role("judge"))
-    stats = generate_seed(llm=llm, pool=pool, workers=workers, judge=judge, judge_pool=judge_pool)
-    print("Seed set written to data/seed_v1/")
+    cm: object = "auto" if control_multiplier == "auto" else int(control_multiplier)
+    stats = generate_seed(llm=llm, pool=pool, workers=workers, judge=judge,
+                          judge_pool=judge_pool, balance=balance,
+                          balance_ratio=balance_ratio, control_multiplier=cm)
+    print("Seed set written to data/seed_v1/ (records.jsonl = balanced, "
+          "records_all.jsonl = full)")
     print(json.dumps(stats.__dict__, indent=2))
+    print(f"Class balance: {stats.positive} positive (incoherent) vs "
+          f"{stats.negative} negative (coherent) -> {stats.balanced_total} balanced")
     if pool is not None:
         print("Generator split:", json.dumps(pool.summary()))
     if judge_pool is not None:
@@ -117,6 +124,13 @@ def main(argv: list[str] | None = None) -> int:
     g.add_argument("--live", action="store_true", help="use live generator+judge (needs keys)")
     g.add_argument("--workers", type=int, default=0,
                    help="parallel generation across sites/models (0/1 = sequential)")
+    g.add_argument("--no-balance", dest="balance", action="store_false",
+                   help="skip class balancing (keep the raw positive-skewed set)")
+    g.add_argument("--balance-ratio", type=float, default=1.0,
+                   help="majority:minority cap after balancing (1.0 = exact 1:1)")
+    g.add_argument("--control-multiplier", default="auto",
+                   help="coherent-paraphrase variants per turn to grow the negative "
+                        "class ('auto' sizes it from the operator mix)")
     args = p.parse_args(argv)
     if args.cmd == "demo":
         return _demo()
@@ -125,7 +139,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "simulate":
         return _simulate(args.metric, args.mode)
     if args.cmd == "generate":
-        return _generate(args.live, args.workers)
+        return _generate(args.live, args.workers, args.balance,
+                         args.balance_ratio, args.control_multiplier)
     return 2
 
 

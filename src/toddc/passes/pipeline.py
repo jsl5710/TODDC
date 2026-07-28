@@ -79,25 +79,42 @@ def run_chain(
 def run_dialogue(*, dialogue_id: str, window: list[DialogueTurn], operators: list[Operator],
                  services: list[str], policy: str = "all", k: Optional[int] = None,
                  llm: Optional[LLMClient] = None, pool=None, workers: int = 0,
-                 judge=None, judge_pool=None, seed: int = 0) -> list[Record]:
+                 judge=None, judge_pool=None, seed: int = 0,
+                 control_multiplier: int = 1) -> list[Record]:
     """Generate multiple samples from one dialogue, each violating a different turn.
 
     `pool` / `judge_pool` (ModelPools) split generation / judging evenly across
     models; `workers` runs sites concurrently. Assignment is sequential (even,
-    deterministic) and each record records its generator/judge model."""
+    deterministic) and each record records its generator/judge model.
+
+    `control_multiplier` > 1 emits that many distinct variants of each *control*
+    (coherent-paraphrase) site — each with its own chain seed, so a live sampling
+    model produces different wordings — growing the negative (coherent) class
+    toward the positives for class balance. See toddc.balancing."""
     sites: list[Site] = select_sites(enumerate_sites(window, operators),
                                       policy=policy, k=k, seed=seed)
-    gen_assign = [(pool.next() if pool is not None else llm) for _ in sites]
-    judge_assign = [(Judge(judge_pool.next()) if judge_pool is not None else judge)
-                    for _ in sites]
 
-    def _run(site, client, jud):
+    # Expand control sites into N seeded variants so the negative class can match
+    # the positives; every other site keeps the base seed. (site, chain_seed)
+    plan: list[tuple[Site, int]] = []
+    for site in sites:
+        if control_multiplier > 1 and site.operator.family == "control":
+            plan += [(site, seed + v) for v in range(control_multiplier)]
+        else:
+            plan.append((site, seed))
+
+    gen_assign = [(pool.next() if pool is not None else llm) for _ in plan]
+    judge_assign = [(Judge(judge_pool.next()) if judge_pool is not None else judge)
+                    for _ in plan]
+
+    def _run(site, client, jud, chain_seed):
         return run_chain(dialogue_id=dialogue_id, window=window, operator=site.operator,
                          services=services, position=site.position, llm=client,
-                         judge=jud, seed=seed)
+                         judge=jud, seed=chain_seed)
 
-    work = list(zip(sites, gen_assign, judge_assign))
-    if workers and workers > 1 and len(sites) > 1:
+    work = [(site, gen_assign[i], judge_assign[i], cseed)
+            for i, (site, cseed) in enumerate(plan)]
+    if workers and workers > 1 and len(work) > 1:
         from concurrent.futures import ThreadPoolExecutor
         with ThreadPoolExecutor(max_workers=workers) as ex:
             results = list(ex.map(lambda w: _run(*w), work))

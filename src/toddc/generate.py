@@ -25,17 +25,39 @@ class SeedStats:
     invariant_failures: int
     by_dimension: dict[str, int]
     coherent_vs_incoherent: dict[str, int]
+    positive: int = 0          # should_flag == True (incoherent)
+    negative: int = 0          # should_flag == False (coherent / control)
+    balanced_total: int = 0    # size of the balanced records.jsonl
+
+
+def _is_positive(payload: dict[str, Any]) -> bool:
+    """Positive class = incoherent (a coherence metric/system should flag it)."""
+    return bool(payload["gold"]["should_flag"])
 
 
 def generate_seed(raw_dialogues: Optional[list[dict[str, Any]]] = None, *,
                   llm: Optional[LLMClient] = None, pool=None, workers: int = 0,
                   judge=None, judge_pool=None, policy: str = "all",
-                  seed: int = 42, out_dir: Path = _OUT) -> SeedStats:
+                  seed: int = 42, balance: bool = True, balance_ratio: float = 1.0,
+                  control_multiplier: Any = "auto", balance_seed: int = 0,
+                  out_dir: Path = _OUT) -> SeedStats:
     """Build the seed set. `pool` / `judge_pool` (ModelPools) split the generation
-    / judging evenly across models; `workers` runs sites concurrently."""
+    / judging evenly across models; `workers` runs sites concurrently.
+
+    Class balance: `control_multiplier` (int or "auto") grows the negative
+    (coherent) class by emitting that many coherent-paraphrase variants per turn;
+    "auto" sizes it from the operator mix. When `balance` is set, the *accepted*
+    records are trimmed to `balance_ratio` (1.0 = exact 1:1) and written to
+    records.jsonl, while the full accepted set is kept in records_all.jsonl."""
+    from toddc import balancing
+
     raw_dialogues = raw_dialogues or [SGD_1_00000_RAW]
     judge = judge or HeuristicJudge()
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    ops = all_operators()
+    mult = (balancing.auto_control_multiplier(ops, lambda o: o.family == "control")
+            if control_multiplier == "auto" else int(control_multiplier))
 
     accepted, review = [], []
     by_dim: dict[str, int] = {}
@@ -48,7 +70,8 @@ def generate_seed(raw_dialogues: Optional[list[dict[str, Any]]] = None, *,
         for rec in run_dialogue(dialogue_id=d.dialogue_id, window=d.turns,
                                 operators=all_operators(), services=d.services,
                                 policy=policy, seed=seed, llm=llm, pool=pool,
-                                workers=workers, judge=judge, judge_pool=judge_pool):
+                                workers=workers, judge=judge, judge_pool=judge_pool,
+                                control_multiplier=mult):
             payload = rec.to_dict()
             errs = check_invariants(payload)
             if errs:
@@ -63,7 +86,19 @@ def generate_seed(raw_dialogues: Optional[list[dict[str, Any]]] = None, *,
             (accepted if rec.passes_confirm.status == "accepted" and not errs
              else review).append(payload)
 
-    _write(out_dir / "records.jsonl", accepted)
+    # Class-balance the accepted set (positive = incoherent / should_flag).
+    if balance:
+        balanced, _dropped, report = balancing.balance(
+            accepted, is_positive=_is_positive, ratio=balance_ratio, seed=balance_seed)
+    else:
+        balanced = accepted
+        report = {"positive": sum(_is_positive(r) for r in accepted),
+                  "negative": sum(not _is_positive(r) for r in accepted),
+                  "target_ratio": None, "majority_class": None, "dropped": 0,
+                  "balanced_total": len(accepted)}
+
+    _write(out_dir / "records.jsonl", balanced)          # balanced, shipped
+    _write(out_dir / "records_all.jsonl", accepted)      # full, unbalanced
     _write(out_dir / "review_queue.jsonl", review)
     stats = SeedStats(
         total=len(accepted) + len(review), accepted=len(accepted),
@@ -71,6 +106,8 @@ def generate_seed(raw_dialogues: Optional[list[dict[str, Any]]] = None, *,
         rejected=sum(1 for r in review if r["passes"]["confirm"]["status"] == "rejected"),
         invariant_failures=inv, by_dimension=dict(sorted(by_dim.items())),
         coherent_vs_incoherent=dict(sorted(by_label.items())),
+        positive=report["positive"], negative=report["negative"],
+        balanced_total=report["balanced_total"],
     )
     manifest = {
         "sgd_version": "GEM/schema_guided_dialog", "num_dialogues": len(raw_dialogues),
@@ -81,6 +118,8 @@ def generate_seed(raw_dialogues: Optional[list[dict[str, Any]]] = None, *,
         "judge_model": getattr(judge_pool, "model_id", None) or getattr(judge, "judge_model", "heuristic-judge"),
         "judges": judge_pool.summary() if judge_pool is not None else None,
         "by_judge": dict(sorted(by_judge.items())),
+        "control_multiplier": mult,
+        "class_balance": report,                             # positive vs negative
         "stats": stats.__dict__,
     }
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
