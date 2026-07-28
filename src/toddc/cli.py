@@ -35,17 +35,32 @@ def _dialogue() -> int:
     return 0
 
 
-def _generate(live: bool) -> int:
+def _generate(live: bool, workers: int = 0) -> int:
     from toddc.generate import generate_seed
-    llm = judge = None
+    llm = pool = judge = judge_pool = None
     if live:
         from toddc.judge import Judge
-        from toddc.runners.factory import client_for_role
-        llm = client_for_role("generator")
-        judge = Judge(client_for_role("judge"))
-    stats = generate_seed(llm=llm, judge=judge)
+        from toddc.runners.factory import (
+            build_generator_pool, build_judge_pool, client_for_role,
+        )
+        pool = build_generator_pool()          # multi-model even split, if configured
+        if pool is not None:
+            print(f"Generators: {len(pool.clients)}-model pool "
+                  f"(split={pool.strategy}): {', '.join(pool.labels)}")
+        else:
+            llm = client_for_role("generator")
+        judge_pool = build_judge_pool()        # split the judge across models too
+        if judge_pool is not None:
+            print(f"Judges: {len(judge_pool.clients)}-model pool: {', '.join(judge_pool.labels)}")
+        else:
+            judge = Judge(client_for_role("judge"))
+    stats = generate_seed(llm=llm, pool=pool, workers=workers, judge=judge, judge_pool=judge_pool)
     print("Seed set written to data/seed_v1/")
     print(json.dumps(stats.__dict__, indent=2))
+    if pool is not None:
+        print("Generator split:", json.dumps(pool.summary()))
+    if judge_pool is not None:
+        print("Judge split:", json.dumps(judge_pool.summary()))
     return 0
 
 
@@ -100,6 +115,8 @@ def main(argv: list[str] | None = None) -> int:
                      help="history = turn + prior context; immediate = current turn alone")
     g = sub.add_parser("generate", help="build the seed set into data/seed_v1/")
     g.add_argument("--live", action="store_true", help="use live generator+judge (needs keys)")
+    g.add_argument("--workers", type=int, default=0,
+                   help="parallel generation across sites/models (0/1 = sequential)")
     args = p.parse_args(argv)
     if args.cmd == "demo":
         return _demo()
@@ -108,7 +125,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "simulate":
         return _simulate(args.metric, args.mode)
     if args.cmd == "generate":
-        return _generate(args.live)
+        return _generate(args.live, args.workers)
     return 2
 
 

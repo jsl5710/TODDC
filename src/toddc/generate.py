@@ -28,8 +28,11 @@ class SeedStats:
 
 
 def generate_seed(raw_dialogues: Optional[list[dict[str, Any]]] = None, *,
-                  llm: Optional[LLMClient] = None, judge=None, policy: str = "all",
+                  llm: Optional[LLMClient] = None, pool=None, workers: int = 0,
+                  judge=None, judge_pool=None, policy: str = "all",
                   seed: int = 42, out_dir: Path = _OUT) -> SeedStats:
+    """Build the seed set. `pool` / `judge_pool` (ModelPools) split the generation
+    / judging evenly across models; `workers` runs sites concurrently."""
     raw_dialogues = raw_dialogues or [SGD_1_00000_RAW]
     judge = judge or HeuristicJudge()
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -37,12 +40,15 @@ def generate_seed(raw_dialogues: Optional[list[dict[str, Any]]] = None, *,
     accepted, review = [], []
     by_dim: dict[str, int] = {}
     by_label: dict[str, int] = {}
+    by_generator: dict[str, int] = {}
+    by_judge: dict[str, int] = {}
     inv = 0
     for raw in raw_dialogues:
         d = parse_dialogue(raw)
         for rec in run_dialogue(dialogue_id=d.dialogue_id, window=d.turns,
                                 operators=all_operators(), services=d.services,
-                                policy=policy, seed=seed, llm=llm, judge=judge):
+                                policy=policy, seed=seed, llm=llm, pool=pool,
+                                workers=workers, judge=judge, judge_pool=judge_pool):
             payload = rec.to_dict()
             errs = check_invariants(payload)
             if errs:
@@ -50,6 +56,10 @@ def generate_seed(raw_dialogues: Optional[list[dict[str, Any]]] = None, *,
                 payload["_invariant_errors"] = errs
             by_dim[str(rec.dimension)] = by_dim.get(str(rec.dimension), 0) + 1
             by_label[rec.gold.label] = by_label.get(rec.gold.label, 0) + 1
+            g = rec.provenance.generator_model or "echo-stub"
+            by_generator[g] = by_generator.get(g, 0) + 1
+            jm = rec.provenance.judge_model or "null-judge"
+            by_judge[jm] = by_judge.get(jm, 0) + 1
             (accepted if rec.passes_confirm.status == "accepted" and not errs
              else review).append(payload)
 
@@ -64,8 +74,14 @@ def generate_seed(raw_dialogues: Optional[list[dict[str, Any]]] = None, *,
     )
     manifest = {
         "sgd_version": "GEM/schema_guided_dialog", "num_dialogues": len(raw_dialogues),
-        "policy": policy, "seed": seed, "generator_model": getattr(llm, "model_id", "echo-stub"),
-        "judge_model": getattr(judge, "judge_model", "heuristic-judge"), "stats": stats.__dict__,
+        "policy": policy, "seed": seed,
+        "generator_model": getattr(pool, "model_id", None) or getattr(llm, "model_id", "echo-stub"),
+        "generators": pool.summary() if pool is not None else None,
+        "by_generator": dict(sorted(by_generator.items())),
+        "judge_model": getattr(judge_pool, "model_id", None) or getattr(judge, "judge_model", "heuristic-judge"),
+        "judges": judge_pool.summary() if judge_pool is not None else None,
+        "by_judge": dict(sorted(by_judge.items())),
+        "stats": stats.__dict__,
     }
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return stats

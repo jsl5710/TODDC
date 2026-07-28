@@ -1,0 +1,44 @@
+# Multi-model generation config for a SERVER run. Copy to models.yaml.
+# Splits generation (Pass-3 paraphrase) and, optionally, the judge (Pass-4)
+# EVENLY across several open models, each on its own OpenAI-compatible endpoint.
+# NEVER commit keys — reference env vars only.
+
+generators:
+  - adapter: toddc.runners.open_source:VLLMClient
+    model_id: Qwen/Qwen2.5-32B-Instruct
+    endpoint: http://gpu0:8000/v1
+  - adapter: toddc.runners.open_source:VLLMClient
+    model_id: meta-llama/Llama-3.1-70B-Instruct
+    endpoint: http://gpu1:8000/v1
+  - adapter: toddc.runners.open_source:VLLMClient
+    model_id: mistralai/Mistral-Small-Instruct-2409
+    endpoint: http://gpu2:8000/v1
+  - adapter: toddc.runners.open_source:OllamaClient
+    model_id: gemma2:27b
+    endpoint: http://gpu3:11434/v1
+
+generation:
+  split: round_robin        # round_robin (exactly even) | random | weighted
+  # weights: [1, 1, 1, 1]
+  seed: 0
+  workers: 4                # parallel generation across sites
+
+# Split the judge across models too (omit for a single roles.judge).
+judges:
+  - adapter: toddc.runners.open_source:VLLMClient
+    model_id: Qwen/Qwen2.5-72B-Instruct
+    endpoint: http://gpu4:8000/v1
+  - adapter: toddc.runners.claude:ClaudeClient
+    model_id: claude-sonnet-5
+    api_key_env: ANTHROPIC_API_KEY
+judging:
+  split: round_robin
+  seed: 0
+
+roles:
+  judge: closed.claude
+closed:
+  claude:
+    adapter: toddc.runners.claude:ClaudeClient
+    model_id: claude-sonnet-5
+    api_key_env: ANTHROPIC_API_KEY
